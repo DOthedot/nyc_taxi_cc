@@ -1,0 +1,18 @@
+version: '1'
+services:
+  postgres:
+    image: postgres:latest  # or postgres:18 for specific version
+    container_name: my-postgres
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: mydb
+      PGDATA: /var/lib/postgresql/data  # Still specifies data location
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql  # Mount one level up!
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

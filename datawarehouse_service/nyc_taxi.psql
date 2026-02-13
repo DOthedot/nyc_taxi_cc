@@ -1,0 +1,38 @@
+
+-- silver table for green taxi 
+CREATE table IF NOT exists nyc_taxi.silver_green_taxi_data as 
+select  distinct "VendorID"  as vendor_id , 
+		COALESCE("Borough",'Unknown') as borough , 
+		COALESCE(service_zone,'Unknown')  as service_zone , 
+		date(lpep_pickup_datetime) as pickup_date, 
+		DATE_PART('month', lpep_pickup_datetime) as mnth  ,  
+		round(EXTRACT(EPOCH FROM AGE(lpep_dropoff_datetime, lpep_pickup_datetime)) / 60,2) as trip_time , 
+		COALESCE(passenger_count , 0) as passenger_count , 
+		trip_distance , total_amount as trip_amount, 
+		COALESCE(payment_type , 5 )  as payment_type
+from nyc_taxi.bronze_green_taxi_data as gt 
+left join nyc_taxi.bronze_taxi_zone_lookup as lkp 
+	on gt."PULocationID" =  lkp."LocationID" 
+where total_amount >= 0 and DATE_PART('month', lpep_pickup_datetime) = (select max(DATE_PART('month', lpep_pickup_datetime)) from nyc_taxi.bronze_green_taxi_data )
+; 
+
+-- drop table  nyc_taxi.silver_green_taxi_data ; 
+
+-- gold table for green taxi, analytics ready
+create table IF NOT exists nyc_taxi.gold_green_taxi_data as (
+select case when vendor_id = 1 then 'Creative Mobile Technologies, LLC' 
+			 when vendor_id = 2 then 'Curb Mobility, LLC' 
+			 when vendor_id = 6 then 'Myle Technologies Inc' end as vendor_id,
+		borough , service_zone,pickup_date,
+		mnth,trip_time,passenger_count,trip_distance,trip_amount,
+		case when payment_type = '0' then 'Flex Fare trip'
+			when payment_type = '1' then 'Credit card'
+			when payment_type = '2' then 'Cash'
+			when payment_type = '3' then 'No charge'
+			when payment_type = '4' then 'Dispute'
+			when payment_type = '5' then 'Unknown'
+			when payment_type = '6' then 'Voided trip' end as payment_type
+from nyc_taxi.silver_green_taxi_data 	
+); 
+
+-- drop table nyc_taxi.gold_green_taxi_data ; 

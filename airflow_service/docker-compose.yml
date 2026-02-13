@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - airflow-net
+
+  airflow:
+    image: apache/airflow:2.10.4-python3.11
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__FERNET_KEY: ''
+      # Add these for stability
+      AIRFLOW__DATABASE__SQL_ALCHEMY_POOL_SIZE: 5
+      AIRFLOW__DATABASE__SQL_ALCHEMY_MAX_OVERFLOW: 10
+    
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./data:/opt/airflow/data
+    ports:
+      - "8080:8080"
+    command: >
+      bash -c "airflow db migrate &&
+               airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+               airflow webserver & airflow scheduler"
+    networks:
+      - airflow-net
+
+networks:
+  airflow-net:
+
+volumes:
+  postgres-data:

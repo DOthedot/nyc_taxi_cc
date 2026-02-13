@@ -1,0 +1,12 @@
+# metabase.toml - Postgres Data Source Configuration
+[databases."postgres-local"]
+driver = "postgres"
+host = "host.docker.internal"
+port = 5432
+dbname = "mydb"
+user = "myuser"
+password = "mysecretpassword"
+
+# Optional: Additional connection settings
+[databases."postgres-local".additional-options]
+sslmode = "disable"

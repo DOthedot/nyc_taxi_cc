@@ -1,0 +1,18 @@
+[2026-02-10T21:45:13.906+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2026-02-10T21:45:13.912+0000] {taskinstance.py:2613} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: monthly_archival_pipeline.monthly_cdl_backup manual__2026-02-10T21:45:12.103728+00:00 [queued]>
+[2026-02-10T21:45:13.916+0000] {taskinstance.py:2613} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: monthly_archival_pipeline.monthly_cdl_backup manual__2026-02-10T21:45:12.103728+00:00 [queued]>
+[2026-02-10T21:45:13.916+0000] {taskinstance.py:2866} INFO - Starting attempt 1 of 1
+[2026-02-10T21:45:13.920+0000] {taskinstance.py:2889} INFO - Executing <Task(_PythonDecoratedOperator): monthly_cdl_backup> on 2026-02-10 21:45:12.103728+00:00
+[2026-02-10T21:45:13.923+0000] {standard_task_runner.py:72} INFO - Started process 399 to run task
+[2026-02-10T21:45:13.925+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'monthly_archival_pipeline', 'monthly_cdl_backup', 'manual__2026-02-10T21:45:12.103728+00:00', '--job-id', '4', '--raw', '--subdir', 'DAGS_FOLDER/monthly_archival.py', '--cfg-path', '/tmp/tmpuy8l_3mz']
+[2026-02-10T21:45:13.926+0000] {standard_task_runner.py:105} INFO - Job 4: Subtask monthly_cdl_backup
+[2026-02-10T21:45:13.954+0000] {task_command.py:467} INFO - Running <TaskInstance: monthly_archival_pipeline.monthly_cdl_backup manual__2026-02-10T21:45:12.103728+00:00 [running]> on host 1f7a88065ad6
+[2026-02-10T21:45:13.983+0000] {taskinstance.py:3132} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='monthly_archival_pipeline' AIRFLOW_CTX_TASK_ID='monthly_cdl_backup' AIRFLOW_CTX_EXECUTION_DATE='2026-02-10T21:45:12.103728+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-02-10T21:45:12.103728+00:00'
+[2026-02-10T21:45:13.984+0000] {taskinstance.py:731} INFO - ::endgroup::
+[2026-02-10T21:45:15.681+0000] {logging_mixin.py:190} INFO - Backup created: nyc_taxi.yellow_taxi_bookings_backup_20260210_214513
+[2026-02-10T21:45:15.688+0000] {python.py:240} INFO - Done. Returned value was: None
+[2026-02-10T21:45:15.704+0000] {taskinstance.py:340} INFO - ::group::Post task execution logs
+[2026-02-10T21:45:15.704+0000] {taskinstance.py:352} INFO - Marking task as SUCCESS. dag_id=monthly_archival_pipeline, task_id=monthly_cdl_backup, run_id=manual__2026-02-10T21:45:12.103728+00:00, execution_date=20260210T214512, start_date=20260210T214513, end_date=20260210T214515
+[2026-02-10T21:45:15.723+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 0
+[2026-02-10T21:45:15.733+0000] {taskinstance.py:3895} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-02-10T21:45:15.734+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

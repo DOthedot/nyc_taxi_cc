@@ -1,0 +1,413 @@
+[2026-02-10T21:35:17.474+0000] {manager.py:483} INFO - Processing files using up to 2 processes at a time 
+[2026-02-10T21:35:17.474+0000] {manager.py:484} INFO - Process each file at most once every 30 seconds
+[2026-02-10T21:35:17.475+0000] {manager.py:485} INFO - Checking for new files in /opt/airflow/dags every 300 seconds
+[2026-02-10T21:35:17.475+0000] {manager.py:821} INFO - Searching for files in /opt/airflow/dags
+[2026-02-10T21:35:17.479+0000] {manager.py:824} INFO - There are 3 files in /opt/airflow/dags
+[2026-02-10T21:35:17.532+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                 PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run      Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  ----------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py     35  0.01s             0           0                                                   0
+/opt/airflow/dags/data_ingestion.py                              0           0                                                   0
+/opt/airflow/dags/monthly_archival.py      34  0.02s             0           0                                                   0
+================================================================================
+[2026-02-10T21:35:47.569+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            0           1  0.80s           2026-02-10T21:35:18                       3
+/opt/airflow/dags/green_cab_monthly.py                           0           1  0.80s           2026-02-10T21:35:18                       3
+/opt/airflow/dags/data_ingestion.py                              0           1  0.03s           2026-02-10T21:35:18                       3
+================================================================================
+[2026-02-10T21:36:18.268+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            0           1  0.30s           2026-02-10T21:35:48                       5
+/opt/airflow/dags/green_cab_monthly.py                           0           1  0.27s           2026-02-10T21:35:48                       5
+/opt/airflow/dags/data_ingestion.py                              0           1  0.02s           2026-02-10T21:35:48                       5
+================================================================================
+[2026-02-10T21:36:48.788+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            0           1  0.18s           2026-02-10T21:36:19                       5
+/opt/airflow/dags/green_cab_monthly.py                           0           1  0.17s           2026-02-10T21:36:19                       5
+/opt/airflow/dags/data_ingestion.py                              0           1  0.02s           2026-02-10T21:36:19                       5
+================================================================================
+[2026-02-10T21:37:18.855+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.49s           2026-02-10T21:36:50                      43
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.47s           2026-02-10T21:36:50                      43
+/opt/airflow/dags/data_ingestion.py                              1           0  0.28s           2026-02-10T21:36:50                      45
+================================================================================
+[2026-02-10T21:37:49.491+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.57s           2026-02-10T21:37:21                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.55s           2026-02-10T21:37:21                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.25s           2026-02-10T21:37:21                      12
+================================================================================
+[2026-02-10T21:38:19.645+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.28s           2026-02-10T21:37:51                      10
+/opt/airflow/dags/monthly_archival.py                            1           0  0.26s           2026-02-10T21:38:17                       9
+/opt/airflow/dags/data_ingestion.py                              1           0  0.23s           2026-02-10T21:37:52                      12
+================================================================================
+[2026-02-10T21:38:49.745+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.29s           2026-02-10T21:38:48                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.26s           2026-02-10T21:38:22                      12
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.26s           2026-02-10T21:38:22                      10
+================================================================================
+[2026-02-10T21:39:20.039+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.50s           2026-02-10T21:38:53                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.48s           2026-02-10T21:38:53                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.47s           2026-02-10T21:39:20                      10
+================================================================================
+[2026-02-10T21:39:50.536+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.33s           2026-02-10T21:39:23                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.32s           2026-02-10T21:39:23                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.25s           2026-02-10T21:39:46                      10
+================================================================================
+[2026-02-10T21:40:17.547+0000] {manager.py:821} INFO - Searching for files in /opt/airflow/dags
+[2026-02-10T21:40:17.550+0000] {manager.py:824} INFO - There are 3 files in /opt/airflow/dags
+[2026-02-10T21:40:20.589+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.43s           2026-02-10T21:40:17                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.29s           2026-02-10T21:39:54                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.28s           2026-02-10T21:39:54                      12
+================================================================================
+[2026-02-10T21:40:51.112+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.35s           2026-02-10T21:40:25                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.34s           2026-02-10T21:40:25                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.30s           2026-02-10T21:40:34                      10
+================================================================================
+[2026-02-10T21:41:21.826+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.37s           2026-02-10T21:40:56                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.36s           2026-02-10T21:40:56                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.35s           2026-02-10T21:41:04                      10
+================================================================================
+[2026-02-10T21:41:52.493+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.34s           2026-02-10T21:41:27                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.33s           2026-02-10T21:41:27                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.30s           2026-02-10T21:41:35                      10
+================================================================================
+[2026-02-10T21:42:22.604+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.48s           2026-02-10T21:41:58                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.46s           2026-02-10T21:41:58                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.31s           2026-02-10T21:42:06                      10
+================================================================================
+[2026-02-10T21:42:52.996+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.37s           2026-02-10T21:42:37                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.34s           2026-02-10T21:42:28                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.32s           2026-02-10T21:42:28                      12
+================================================================================
+[2026-02-10T21:43:23.729+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.38s           2026-02-10T21:42:59                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.37s           2026-02-10T21:42:59                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.26s           2026-02-10T21:43:07                      10
+================================================================================
+[2026-02-10T21:43:53.746+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.34s           2026-02-10T21:43:38                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.29s           2026-02-10T21:43:30                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.29s           2026-02-10T21:43:30                      12
+================================================================================
+[2026-02-10T21:44:24.110+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.30s           2026-02-10T21:44:00                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.29s           2026-02-10T21:44:00                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.25s           2026-02-10T21:44:09                      10
+================================================================================
+[2026-02-10T21:44:55.110+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.41s           2026-02-10T21:44:31                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.40s           2026-02-10T21:44:31                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.40s           2026-02-10T21:44:27                      10
+================================================================================
+[2026-02-10T21:45:18.386+0000] {manager.py:821} INFO - Searching for files in /opt/airflow/dags
+[2026-02-10T21:45:18.403+0000] {manager.py:824} INFO - There are 3 files in /opt/airflow/dags
+[2026-02-10T21:45:25.516+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.69s           2026-02-10T21:44:56                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.32s           2026-02-10T21:45:02                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.30s           2026-02-10T21:45:02                      12
+================================================================================
+[2026-02-10T21:45:56.258+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.42s           2026-02-10T21:45:27                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.34s           2026-02-10T21:45:32                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.33s           2026-02-10T21:45:32                      12
+================================================================================
+[2026-02-10T21:46:27.040+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.40s           2026-02-10T21:45:58                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.39s           2026-02-10T21:46:03                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.38s           2026-02-10T21:46:03                      12
+================================================================================
+[2026-02-10T21:46:57.754+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.30s           2026-02-10T21:46:34                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.28s           2026-02-10T21:46:34                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.27s           2026-02-10T21:46:29                      10
+================================================================================
+[2026-02-10T21:47:28.156+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.36s           2026-02-10T21:47:00                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.29s           2026-02-10T21:47:05                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.28s           2026-02-10T21:47:05                      12
+================================================================================
+[2026-02-10T21:47:59.146+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.33s           2026-02-10T21:47:35                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.32s           2026-02-10T21:47:35                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.30s           2026-02-10T21:47:30                      10
+================================================================================
+[2026-02-10T21:48:29.861+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.38s           2026-02-10T21:48:01                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.35s           2026-02-10T21:48:06                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.34s           2026-02-10T21:48:06                      12
+================================================================================
+[2026-02-10T21:49:00.555+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.30s           2026-02-10T21:48:37                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.30s           2026-02-10T21:48:37                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.26s           2026-02-10T21:48:32                      10
+================================================================================
+[2026-02-10T21:49:31.230+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.27s           2026-02-10T21:49:07                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.27s           2026-02-10T21:49:07                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.25s           2026-02-10T21:49:02                      10
+================================================================================
+[2026-02-10T21:50:01.639+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.48s           2026-02-10T21:49:33                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.39s           2026-02-10T21:49:38                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.35s           2026-02-10T21:49:38                      12
+================================================================================
+[2026-02-10T21:50:18.454+0000] {manager.py:821} INFO - Searching for files in /opt/airflow/dags
+[2026-02-10T21:50:18.470+0000] {manager.py:824} INFO - There are 3 files in /opt/airflow/dags
+[2026-02-10T21:50:31.648+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.35s           2026-02-10T21:50:04                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.32s           2026-02-10T21:50:09                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.31s           2026-02-10T21:50:09                      12
+================================================================================
+[2026-02-10T21:51:02.385+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.41s           2026-02-10T21:50:40                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.39s           2026-02-10T21:50:40                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.32s           2026-02-10T21:50:37                      10
+================================================================================
+[2026-02-10T21:51:32.965+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.36s           2026-02-10T21:51:10                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.35s           2026-02-10T21:51:10                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.25s           2026-02-10T21:51:07                      10
+================================================================================
+[2026-02-10T21:52:03.563+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.28s           2026-02-10T21:51:41                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.27s           2026-02-10T21:51:41                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.26s           2026-02-10T21:51:38                      10
+================================================================================
+[2026-02-10T21:52:34.486+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.42s           2026-02-10T21:52:09                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.40s           2026-02-10T21:52:12                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.39s           2026-02-10T21:52:12                      12
+================================================================================
+[2026-02-10T21:53:04.819+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/monthly_archival.py                            1           0  0.51s           2026-02-10T21:52:40                      10
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.32s           2026-02-10T21:52:42                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.31s           2026-02-10T21:52:42                      12
+================================================================================
+[2026-02-10T21:53:35.084+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.31s           2026-02-10T21:53:13                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.30s           2026-02-10T21:53:13                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.29s           2026-02-10T21:53:35                      32
+================================================================================
+[2026-02-10T21:54:05.479+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.29s           2026-02-10T21:53:44                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.28s           2026-02-10T21:53:44                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.25s           2026-02-10T21:53:45                       9
+================================================================================
+[2026-02-10T21:54:36.169+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.37s           2026-02-10T21:54:14                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.36s           2026-02-10T21:54:14                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.27s           2026-02-10T21:54:16                      10
+================================================================================
+[2026-02-10T21:55:06.979+0000] {manager.py:997} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                               PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run               Last # of DB Queries
+--------------------------------------  -----  ---------  --------  ----------  --------------  -------------------  ----------------------
+/opt/airflow/dags/green_cab_monthly.py                           1           0  0.48s           2026-02-10T21:54:45                      10
+/opt/airflow/dags/data_ingestion.py                              1           0  0.46s           2026-02-10T21:54:45                      12
+/opt/airflow/dags/monthly_archival.py                            1           0  0.28s           2026-02-10T21:54:47                      10
+================================================================================
+[2026-02-10T21:55:18.485+0000] {manager.py:821} INFO - Searching for files in /opt/airflow/dags
+[2026-02-10T21:55:18.493+0000] {manager.py:824} INFO - There are 3 files in /opt/airflow/dags

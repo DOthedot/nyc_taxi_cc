@@ -1,0 +1,5 @@
+
+-- to build the docker image for spark 
+docker compose build --no-cache
+
+--

@@ -1,0 +1,47 @@
+
+
+
+
+# for kafka and spark ingestion 
+do the following bash commands 
+mkdir -p spark-redpanda_service/scripts
+mkdir -p spark-redpanda_service/output
+
+
+
+# then after that 
+we have to up the docker container 
+docker compose build --no-cache
+docker compose up -d
+docker ps
+
+
+# You should see:
+# - redpanda-1
+# - redpanda-console
+# - spark-master
+# - spark-worker
+# - spark-submit
+
+
+# to produce records of yellow taxi in kafka broker  
+uv run scripts/producer.py
+
+# Step 5: Verify data in Kafka (optional - check in browser)
+# Go to http://localhost:8081 and check topic 'yellow_taxi_bookings'
+
+# Step 6: Consume data with Spark and save to Parquet in data folder of spark service 
+docker exec spark-submit python /opt/spark/scripts/consumer.py
+
+
+# Step 7: Check the output on your Mac
+ls -la output/
+
+
+
+# Stop all containers
+docker compose down
+
+# Remove all data and start fresh
+docker compose down -v
+rm -rf output/*

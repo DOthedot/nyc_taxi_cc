@@ -1,0 +1,40 @@
+services:
+  spark-master:
+    build: .
+    platform: linux/arm64
+    container_name: spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    ports:
+      - "9090:8080"
+      - "7077:7077"
+      - "4040:4040"
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    volumes:
+      - ../data/green_taxi:/tmp/data/green_taxi
+    networks:
+      - spark-network
+      - kafka_service_default  # Add this line
+
+  spark-worker:
+    build: .
+    platform: linux/arm64
+    container_name: spark-worker
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+      - SPARK_WORKER_MEMORY=2g
+      - SPARK_WORKER_CORES=2
+    volumes:
+      - ../data/green_taxi:/tmp/data/green_taxi
+    networks:
+      - spark-network
+      - kafka_service_default  # Add this line
+
+networks:
+  spark-network:
+    driver: bridge
+  kafka_service_default:  # Add this block
+    external: true
