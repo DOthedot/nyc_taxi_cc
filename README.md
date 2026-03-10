@@ -131,7 +131,7 @@ bronze_taxi_zone_lookup    • Zone enrichment (JOIN)      • Payment type deco
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/<your-username>/nyc-taxi-data-pipeline.git
+   git clone https://github.com/DOthedot/nyc-taxi-data-pipeline.git
    cd nyc-taxi-data-pipeline
    ```
 
