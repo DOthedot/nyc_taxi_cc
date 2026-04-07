@@ -1,0 +1,278 @@
+version: '3.8'
+
+# ============================================================
+# NYC Taxi Pipeline — Unified Docker Compose
+#
+# All services on a single data-network bridge
+# Load credentials from .env (copy from .env.example)
+#
+# Startup: docker compose up -d
+# Check health: docker compose ps
+# ============================================================
+
+services:
+
+  # ── PostgreSQL for Airflow Metadata ──────────────────────
+  postgres-airflow:
+    image: postgres:16
+    container_name: postgres-airflow
+    environment:
+      POSTGRES_USER: ${POSTGRES_AIRFLOW_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_AIRFLOW_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_AIRFLOW_DB:-airflow}
+    volumes:
+      - postgres-airflow-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Internal port on 5432, external on 5433 to avoid conflict
+    networks:
+      - data-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_AIRFLOW_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── PostgreSQL Data Warehouse ───────────────────────────
+  postgres-warehouse:
+    image: postgres:16
+    container_name: postgres-warehouse
+    environment:
+      POSTGRES_USER: ${POSTGRES_WAREHOUSE_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_WAREHOUSE_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_WAREHOUSE_DB}
+    volumes:
+      - postgres-warehouse-data:/var/lib/postgresql/data
+      - ./datawarehouse_service/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"  # External access to data warehouse
+    networks:
+      - data-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_WAREHOUSE_USER} -d ${POSTGRES_WAREHOUSE_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Apache Airflow (Web Server) ──────────────────────────
+  airflow-webserver:
+    build:
+      context: ./airflow_service
+      dockerfile: Dockerfile
+    image: airflow-custom:2.10.4
+    container_name: airflow-webserver
+    depends_on:
+      postgres-airflow:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_AIRFLOW_USER}:${POSTGRES_AIRFLOW_PASSWORD}@postgres-airflow:5432/${POSTGRES_AIRFLOW_DB:-airflow}
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_POOL_SIZE: 5
+      AIRFLOW__DATABASE__SQL_ALCHEMY_MAX_OVERFLOW: 10
+      # Warehouse credentials for DAG tasks
+      POSTGRES_WAREHOUSE_HOST: postgres-warehouse
+      POSTGRES_WAREHOUSE_PORT: 5432
+      POSTGRES_WAREHOUSE_DB: ${POSTGRES_WAREHOUSE_DB}
+      POSTGRES_WAREHOUSE_USER: ${POSTGRES_WAREHOUSE_USER}
+      POSTGRES_WAREHOUSE_PASSWORD: ${POSTGRES_WAREHOUSE_PASSWORD}
+      # Redpanda / Kafka
+      REDPANDA_BOOTSTRAP: ${REDPANDA_BOOTSTRAP}
+      KAFKA_TOPIC_YELLOW: ${KAFKA_TOPIC_YELLOW}
+      KAFKA_TOPIC_GREEN: ${KAFKA_TOPIC_GREEN}
+    volumes:
+      - ./airflow_service/dags:/opt/airflow/dags
+      - ./airflow_service/logs:/opt/airflow/logs
+      - ./data:/opt/airflow/data
+    ports:
+      - "8080:8080"  # Airflow Web UI
+    networks:
+      - data-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    command: >
+      bash -c "airflow db migrate &&
+               airflow users create --username admin --password ${AIRFLOW_ADMIN_PASSWORD} --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+               airflow webserver & airflow scheduler"
+    restart: unless-stopped
+
+  # ── Redpanda (Kafka-Compatible Broker) ───────────────────
+  redpanda-1:
+    image: docker.redpanda.com/redpandadata/redpanda:v23.2.26
+    container_name: redpanda-1
+    command:
+      - redpanda
+      - start
+      - --smp
+      - '1'
+      - --reserve-memory
+      - 0M
+      - --overprovisioned
+      - --node-id
+      - '1'
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda-1:29092,OUTSIDE://localhost:9092
+      - --pandaproxy-addr
+      - PLAINTEXT://0.0.0.0:28082,OUTSIDE://0.0.0.0:8082
+      - --advertise-pandaproxy-addr
+      - PLAINTEXT://redpanda-1:28082,OUTSIDE://localhost:8082
+      - --rpc-addr
+      - 0.0.0.0:33145
+      - --advertise-rpc-addr
+      - redpanda-1:33145
+    ports:
+      - "8082:8082"
+      - "9092:9092"    # Kafka broker (outside)
+      - "9644:9644"    # Admin API
+      - "28082:28082"
+      - "29092:29092"  # Kafka broker (inside network)
+    networks:
+      - data-network
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "info"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Redpanda Console (Web UI) ────────────────────────────
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:v2.2.2
+    container_name: redpanda-console
+    entrypoint: /bin/sh
+    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda-1:29092"]
+          schemaRegistry:
+            enabled: false
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda-1:9644"]
+        connect:
+          enabled: false
+    ports:
+      - "8081:8080"  # Redpanda Console UI
+    depends_on:
+      redpanda-1:
+        condition: service_healthy
+    networks:
+      - data-network
+    restart: unless-stopped
+
+  # ── Spark Master ─────────────────────────────────────────
+  spark-master:
+    build:
+      context: ./spark-redpanda_service
+      dockerfile: Dockerfile
+    image: spark-custom:4.1.1
+    platform: linux/arm64
+    container_name: spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+      # Pass env vars to Spark jobs
+      - REDPANDA_BOOTSTRAP=${REDPANDA_BOOTSTRAP}
+      - KAFKA_TOPIC_YELLOW=${KAFKA_TOPIC_YELLOW}
+      - KAFKA_TOPIC_GREEN=${KAFKA_TOPIC_GREEN}
+      - POSTGRES_WAREHOUSE_HOST=postgres-warehouse
+      - POSTGRES_WAREHOUSE_PORT=5432
+      - POSTGRES_WAREHOUSE_DB=${POSTGRES_WAREHOUSE_DB}
+      - POSTGRES_WAREHOUSE_USER=${POSTGRES_WAREHOUSE_USER}
+      - POSTGRES_WAREHOUSE_PASSWORD=${POSTGRES_WAREHOUSE_PASSWORD}
+      - INPUT_DATA_PATH=${INPUT_DATA_PATH}
+    ports:
+      - "9090:8080"   # Spark Master Web UI
+      - "7077:7077"   # Spark Master Port
+      - "4040:4040"   # Spark Application UI
+    networks:
+      - data-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Spark Worker ─────────────────────────────────────────
+  spark-worker:
+    build:
+      context: ./spark-redpanda_service
+      dockerfile: Dockerfile
+    image: spark-custom:4.1.1
+    platform: linux/arm64
+    container_name: spark-worker
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+      - SPARK_WORKER_MEMORY=1g
+      - SPARK_WORKER_CORES=1
+      - REDPANDA_BOOTSTRAP=${REDPANDA_BOOTSTRAP}
+      - KAFKA_TOPIC_YELLOW=${KAFKA_TOPIC_YELLOW}
+      - KAFKA_TOPIC_GREEN=${KAFKA_TOPIC_GREEN}
+      - POSTGRES_WAREHOUSE_HOST=postgres-warehouse
+      - POSTGRES_WAREHOUSE_PORT=5432
+      - POSTGRES_WAREHOUSE_DB=${POSTGRES_WAREHOUSE_DB}
+      - POSTGRES_WAREHOUSE_USER=${POSTGRES_WAREHOUSE_USER}
+      - POSTGRES_WAREHOUSE_PASSWORD=${POSTGRES_WAREHOUSE_PASSWORD}
+      - INPUT_DATA_PATH=${INPUT_DATA_PATH}
+    networks:
+      - data-network
+    restart: unless-stopped
+
+  # ── Spark Submit (Idle container for job submission) ─────
+  spark-submit:
+    build:
+      context: ./spark-redpanda_service
+      dockerfile: Dockerfile
+    image: spark-custom:4.1.1
+    platform: linux/arm64
+    container_name: spark-submit
+    depends_on:
+      spark-master:
+        condition: service_healthy
+      spark-worker:
+        condition: service_started
+      redpanda-1:
+        condition: service_healthy
+    volumes:
+      - ./spark-redpanda_service/scripts:/opt/spark/scripts:ro
+      - ./spark-redpanda_service/checkpoint:/opt/spark/checkpoint
+      - ./spark-redpanda_service/output:/opt/spark/output
+      - ./data:/opt/spark/data:ro
+    networks:
+      - data-network
+    environment:
+      - REDPANDA_BOOTSTRAP=${REDPANDA_BOOTSTRAP}
+      - KAFKA_TOPIC_YELLOW=${KAFKA_TOPIC_YELLOW}
+      - KAFKA_TOPIC_GREEN=${KAFKA_TOPIC_GREEN}
+      - POSTGRES_WAREHOUSE_HOST=postgres-warehouse
+      - POSTGRES_WAREHOUSE_PORT=5432
+      - POSTGRES_WAREHOUSE_DB=${POSTGRES_WAREHOUSE_DB}
+      - POSTGRES_WAREHOUSE_USER=${POSTGRES_WAREHOUSE_USER}
+      - POSTGRES_WAREHOUSE_PASSWORD=${POSTGRES_WAREHOUSE_PASSWORD}
+      - INPUT_DATA_PATH=${INPUT_DATA_PATH}
+    command: tail -f /dev/null  # Keep container running for docker exec
+    restart: unless-stopped
+
+networks:
+  data-network:
+    driver: bridge
+
+volumes:
+  postgres-airflow-data:
+  postgres-warehouse-data:
