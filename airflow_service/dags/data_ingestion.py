@@ -74,6 +74,42 @@ def yellow_taxi_pipeline():
         return file_month
 
     @task
+    def validate_bronze(file_month: str) -> str:
+        """Validate data quality in bronze_yellow_taxi_data layer."""
+        engine = _engine()
+        with engine.connect() as conn:
+            # Hard failure: no rows for this month
+            row_count = conn.execute(text("""
+                SELECT COUNT(*) FROM nyc_taxi.bronze_yellow_taxi_data
+                WHERE DATE_TRUNC('month', tpep_pickup_datetime) =
+                      DATE_TRUNC('month', CAST(:month_str AS DATE))
+            """), {"month_str": f"{file_month}-01"}).scalar()
+
+            if row_count == 0:
+                raise ValueError(f"DQ FAIL: zero rows found for {file_month}. Halting pipeline.")
+
+            # Hard failure: NULL on key timestamp
+            null_count = conn.execute(text("""
+                SELECT COUNT(*) FROM nyc_taxi.bronze_yellow_taxi_data
+                WHERE tpep_pickup_datetime IS NULL OR tpep_dropoff_datetime IS NULL
+            """)).scalar()
+            if null_count > 0:
+                raise ValueError(f"DQ FAIL: {null_count} rows with NULL pickup/dropoff datetime.")
+
+            # Soft warning: anomalous negative amount rate
+            result = conn.execute(text("""
+                SELECT ROUND(100.0 * COUNT(*) FILTER (WHERE total_amount < 0) / COUNT(*), 2) as neg_pct
+                FROM nyc_taxi.bronze_yellow_taxi_data
+            """)).fetchone()
+            neg_pct = result[0] if result else 0
+
+            if neg_pct and neg_pct > 5.0:
+                logging.warning(f"DQ WARN: {neg_pct}% rows have negative total_amount (expected < 5%)")
+
+            logging.info(f"DQ PASS (bronze): {row_count} rows, {neg_pct or 0}% negative amounts")
+        return file_month
+
+    @task
     def build_silver(_file_month: str):
         """Drop-and-recreate silver_yellow_taxi_data from the bronze layer."""
         engine = _engine()
@@ -132,10 +168,40 @@ def yellow_taxi_pipeline():
             """))
         logging.info("Gold table rebuilt")
 
-    # Task dependencies: bronze → silver → gold
+    @task
+    def validate_gold():
+        """Validate data quality in gold_yellow_taxi_data layer."""
+        engine = _engine()
+        with engine.connect() as conn:
+            # Hard failure: empty gold table
+            silver_count = conn.execute(text(
+                "SELECT COUNT(*) FROM nyc_taxi.silver_yellow_taxi_data"
+            )).scalar()
+            gold_count = conn.execute(text(
+                "SELECT COUNT(*) FROM nyc_taxi.gold_yellow_taxi_data"
+            )).scalar()
+
+            if gold_count == 0:
+                raise ValueError("DQ FAIL: gold_yellow_taxi_data is empty after transform. Halting.")
+
+            # Soft warning: row loss from silver to gold
+            if silver_count > 0:
+                loss_pct = 100.0 * (silver_count - gold_count) / silver_count
+            else:
+                loss_pct = 0
+
+            if loss_pct > 1.0:
+                logging.warning(f"DQ WARN: {loss_pct:.1f}% data loss from silver to gold (expected < 1%)")
+
+            logging.info(f"DQ PASS (gold): {gold_count} rows ({loss_pct:.1f}% loss from silver)")
+
+    # Task chain: ingest → validate_bronze → silver → gold → validate_gold
     month = ingest_bronze("{{ params.file_month }}")
-    silver = build_silver(month)
-    silver >> build_gold()
+    bronze_validated = validate_bronze(month)
+    silver = build_silver(bronze_validated)
+    gold = build_gold()
+    silver >> gold
+    gold >> validate_gold()
 
 
 yellow_taxi_pipeline()

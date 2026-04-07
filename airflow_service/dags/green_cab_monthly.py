@@ -148,6 +148,46 @@ def taxi_pipeline():
         
     
     @task
+    def validate_bronze(file_month: str) -> str:
+        """Validate data quality in bronze_green_taxi_data layer."""
+        cfg = _postgres_config()
+        engine = create_engine(
+            f"postgresql+psycopg2://{cfg['user']}:{cfg['password']}"
+            f"@{cfg['host']}:{cfg['port']}/{cfg['database']}"
+        )
+        with engine.connect() as conn:
+            # Hard failure: no rows for this month
+            row_count = conn.execute(text("""
+                SELECT COUNT(*) FROM nyc_taxi.bronze_green_taxi_data
+                WHERE DATE_TRUNC('month', lpep_pickup_datetime) =
+                      DATE_TRUNC('month', CAST(:month_str AS DATE))
+            """), {"month_str": f"{file_month}-01"}).scalar()
+
+            if row_count == 0:
+                raise ValueError(f"DQ FAIL: zero rows found for {file_month}. Halting pipeline.")
+
+            # Hard failure: NULL on key timestamp
+            null_count = conn.execute(text("""
+                SELECT COUNT(*) FROM nyc_taxi.bronze_green_taxi_data
+                WHERE lpep_pickup_datetime IS NULL OR lpep_dropoff_datetime IS NULL
+            """)).scalar()
+            if null_count > 0:
+                raise ValueError(f"DQ FAIL: {null_count} rows with NULL pickup/dropoff datetime.")
+
+            # Soft warning: anomalous negative amount rate
+            result = conn.execute(text("""
+                SELECT ROUND(100.0 * COUNT(*) FILTER (WHERE total_amount < 0) / COUNT(*), 2) as neg_pct
+                FROM nyc_taxi.bronze_green_taxi_data
+            """)).fetchone()
+            neg_pct = result[0] if result else 0
+
+            if neg_pct and neg_pct > 5.0:
+                logging.warning(f"DQ WARN: {neg_pct}% rows have negative total_amount (expected < 5%)")
+
+            logging.info(f"DQ PASS (bronze): {row_count} rows, {neg_pct or 0}% negative amounts")
+        return file_month
+
+    @task
     def build_silver_gold():
         """Drop-and-recreate silver and gold green taxi tables from the bronze layer."""
         cfg = _postgres_config()
@@ -207,6 +247,37 @@ def taxi_pipeline():
             logging.info("gold_green_taxi_data rebuilt")
 
     @task
+    def validate_gold():
+        """Validate data quality in gold_green_taxi_data layer."""
+        cfg = _postgres_config()
+        engine = create_engine(
+            f"postgresql+psycopg2://{cfg['user']}:{cfg['password']}"
+            f"@{cfg['host']}:{cfg['port']}/{cfg['database']}"
+        )
+        with engine.connect() as conn:
+            # Hard failure: empty gold table
+            silver_count = conn.execute(text(
+                "SELECT COUNT(*) FROM nyc_taxi.silver_green_taxi_data"
+            )).scalar()
+            gold_count = conn.execute(text(
+                "SELECT COUNT(*) FROM nyc_taxi.gold_green_taxi_data"
+            )).scalar()
+
+            if gold_count == 0:
+                raise ValueError("DQ FAIL: gold_green_taxi_data is empty after transform. Halting.")
+
+            # Soft warning: row loss from silver to gold
+            if silver_count > 0:
+                loss_pct = 100.0 * (silver_count - gold_count) / silver_count
+            else:
+                loss_pct = 0
+
+            if loss_pct > 1.0:
+                logging.warning(f"DQ WARN: {loss_pct:.1f}% data loss from silver to gold (expected < 1%)")
+
+            logging.info(f"DQ PASS (gold): {gold_count} rows ({loss_pct:.1f}% loss from silver)")
+
+    @task
     def log_summary(transformed_data):
         """Log final summary"""
         logging.info(f"Pipeline complete! Analyzed {len(transformed_data)} zones")
@@ -231,12 +302,20 @@ def taxi_pipeline():
     postgres_task = postgre_cdl_dump(downloaded_filepath)
     archive_task = archive_data(postgres_task)  # archive depends on postgres_task completing
 
-    # Silver/Gold rebuild waits for bronze load
+    # Validate bronze before proceeding to silver/gold
+    bronze_validated = validate_bronze("{{ params.file_month }}")
+    postgres_task >> bronze_validated
+
+    # Silver/Gold rebuild waits for validated bronze
     silver_gold_task = build_silver_gold()
-    postgres_task >> silver_gold_task
+    bronze_validated >> silver_gold_task
+
+    # Validate gold layer
+    gold_validated = validate_gold()
+    silver_gold_task >> gold_validated
 
     # Log waits for everything to complete
-    [silver_gold_task, archive_task, results] >> log_summary(results['result'])
+    [gold_validated, archive_task, results] >> log_summary(results['result'])
 
     
 
