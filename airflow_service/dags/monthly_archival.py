@@ -1,22 +1,25 @@
-# airflow related modules 
+# airflow related modules
 from airflow.decorators import dag, task
-from airflow import DAG
-from datetime import datetime, timedelta
+from datetime import datetime
 
-# program related modules 
+# program related modules
 import logging
 import os
-from pathlib import Path
-import pyarrow.parquet as pq
 
-# data wrangling modules 
-import requests
-import pandas as pd
+# database related modules
+from sqlalchemy import create_engine, text
+from psycopg.sql import SQL, Identifier
 
 
-# database related modules 
-import psycopg
-from sqlalchemy import create_engine
+def _postgres_config():
+    """Load PostgreSQL config from environment variables."""
+    return {
+        'host': os.environ.get('POSTGRES_WAREHOUSE_HOST', 'postgres-warehouse'),
+        'port': int(os.environ.get('POSTGRES_WAREHOUSE_PORT', '5432')),
+        'database': os.environ.get('POSTGRES_WAREHOUSE_DB', 'mydb'),
+        'user': os.environ['POSTGRES_WAREHOUSE_USER'],
+        'password': os.environ['POSTGRES_WAREHOUSE_PASSWORD'],
+    }
 
 
 @dag(
@@ -29,32 +32,48 @@ from sqlalchemy import create_engine
 def archival_pipeline():
 
     @task
-    def monthly_cdl_backup(table_name = 'yellow_taxi_bookings', backup_suffix=None):
-        POSTGRES_CONFIG = {'host': 'host.docker.internal','database': 'mydb','user': 'myuser', 'password': 'mysecretpassword','port': 5432}
-    
-        engine = create_engine(f"postgresql+psycopg2://{POSTGRES_CONFIG['user']}:{POSTGRES_CONFIG['password']}@{POSTGRES_CONFIG['host']}:{POSTGRES_CONFIG['port']}/{POSTGRES_CONFIG['database']}")
-        
+    def monthly_cdl_backup(table_name='yellow_taxi_bookings', backup_suffix=None):
+        """Create a timestamped backup of a table."""
+        cfg = _postgres_config()
+        engine = create_engine(
+            f"postgresql+psycopg2://{cfg['user']}:{cfg['password']}"
+            f"@{cfg['host']}:{cfg['port']}/{cfg['database']}"
+        )
+
         try:
-            #checking for backup suffix
             if backup_suffix is None:
                 backup_suffix = datetime.now().strftime("%Y%m%d_%H%M%S")
 
             backup_table = f"{table_name}_backup_{backup_suffix}"
 
             with engine.begin() as conn:
-                # Create backup table
-                result = conn.execute(f"""
-                                      CREATE TABLE nyc_taxi.{backup_table} 
-                                        AS SELECT * FROM nyc_taxi.{table_name}
-                                    """)
-                #conn.commit()
-                print(f"Backup created: nyc_taxi.{backup_table}")   
+                # Use SQL identifiers to prevent SQL injection
+                sql = SQL(
+                    "CREATE TABLE nyc_taxi.{} AS SELECT * FROM nyc_taxi.{}"
+                ).format(
+                    Identifier(backup_table),
+                    Identifier(table_name)
+                )
+                conn.execute(sql)
+                logging.info(f"Backup created: nyc_taxi.{backup_table}")
 
-        except Exception as e : 
-            logging.info(f"""Unable to create backup : "{backup_table}" to Postgres : {e}""")
+        except Exception as e:
+            logging.error(f"Unable to create backup '{backup_table}': {e}")
             raise
 
-    monthly_cdl_backup(table_name='yellow_taxi_bookings') >> monthly_cdl_backup(table_name='green_taxi_bookings')
+    # Archive bronze application tables
+    t1 = monthly_cdl_backup(table_name='yellow_taxi_bookings')
+    t2 = monthly_cdl_backup(table_name='green_taxi_bookings')
+
+    # Archive silver/gold tables for both taxi types
+    t3 = monthly_cdl_backup(table_name='silver_yellow_taxi_data')
+    t4 = monthly_cdl_backup(table_name='gold_yellow_taxi_data')
+    t5 = monthly_cdl_backup(table_name='silver_green_taxi_data')
+    t6 = monthly_cdl_backup(table_name='gold_green_taxi_data')
+
+    # Yellow chain, then green chain (sequential to avoid lock contention)
+    t1 >> t3 >> t4
+    t2 >> t5 >> t6
 
 # Initialize DAG
 archival_pipeline()
