@@ -1,43 +1,22 @@
 import os
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col
-from pyspark.sql.types import StructType, StructField, StringType, DoubleType, IntegerType
+
+# Import shared schema from schemas.py (single source of truth)
+from schemas import YELLOW_TAXI_SCHEMA
 
 print("=" * 60)
-print("Starting Spark Kafka Consumer")
+print("Starting Spark Kafka Consumer (Batch → PostgreSQL)")
 print("=" * 60)
 
 spark = SparkSession.builder \
-    .appName("KafkaSparkConsumer") \
+    .appName("KafkaSparkConsumerBatch") \
     .master("spark://spark-master:7077") \
     .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.13:4.1.1,org.postgresql:postgresql:42.7.3") \
     .config("spark.executor.memory", "512m") \
     .getOrCreate()
 
 print("Spark session created")
-
-# Yellow taxi schema (correct field names: tpep_* for yellow, not lpep_*)
-schema = StructType([
-    StructField("VendorID", IntegerType(), True),
-    StructField("tpep_pickup_datetime", StringType(), True),
-    StructField("tpep_dropoff_datetime", StringType(), True),
-    StructField("passenger_count", DoubleType(), True),
-    StructField("trip_distance", DoubleType(), True),
-    StructField("RatecodeID", DoubleType(), True),
-    StructField("store_and_fwd_flag", StringType(), True),
-    StructField("PULocationID", IntegerType(), True),
-    StructField("DOLocationID", IntegerType(), True),
-    StructField("payment_type", IntegerType(), True),
-    StructField("fare_amount", DoubleType(), True),
-    StructField("extra", DoubleType(), True),
-    StructField("mta_tax", DoubleType(), True),
-    StructField("tip_amount", DoubleType(), True),
-    StructField("tolls_amount", DoubleType(), True),
-    StructField("improvement_surcharge", DoubleType(), True),
-    StructField("total_amount", DoubleType(), True),
-    StructField("congestion_surcharge", DoubleType(), True),
-    StructField("Airport_fee", DoubleType(), True),
-])
 
 bootstrap_servers = os.environ.get("REDPANDA_BOOTSTRAP", "redpanda-1:29092")
 print(f"Connecting to Kafka at {bootstrap_servers}...")
@@ -55,7 +34,7 @@ print("Connected to Kafka")
 print("Parsing JSON data...")
 
 parsed_df = df.select(
-    from_json(col("value").cast("string"), schema).alias("data")
+    from_json(col("value").cast("string"), YELLOW_TAXI_SCHEMA).alias("data")
 ).select("data.*")
 
 record_count = parsed_df.count()

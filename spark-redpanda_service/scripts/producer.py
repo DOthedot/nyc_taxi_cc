@@ -12,9 +12,10 @@ class JsonProducer(Producer):
         self.producer = Producer(**props)
 
     def publish_rides(self, topic: str, file_path: str):
+            """Publish taxi rides from a Parquet file to a Kafka topic."""
             try:
                 # Load Parquet file
-                print("Loading parquet file...")
+                print(f"Loading parquet file: {file_path}")
                 yellow_taxi = pq.ParquetFile(file_path)
 
                 index = 1
@@ -23,22 +24,24 @@ class JsonProducer(Producer):
                 for batch in yellow_taxi.iter_batches(batch_size=1000):
                     chunk_df = pa.Table.from_batches([batch]).to_pandas()
                     records = chunk_df.to_dict('records')
-    
-                    print(f"Sending Batch {index} ({len(records)} records)")
-    
-                    # Send to Kafka
+
+                    print(f"Sending Batch {index} ({len(records)} records) to topic '{topic}'")
+
+                    # Send to Kafka (use the topic parameter, not hardcoded topic)
                     for record in records:
                         self.producer.produce(
-                            'yellow_taxi_bookings',
+                            topic,
                             value=json.dumps(record, default=str).encode()
                         )
-    
+
                     self.producer.flush()
                     total_records += len(records)
                     index += 1
-               
+
+                print(f"Published {total_records} total records to topic '{topic}'")
+
             except Exception as e:
-                print(e.__str__())
+                print(f"Error during publish_rides: {e.__str__()}")
 
 
 if __name__ == '__main__':
