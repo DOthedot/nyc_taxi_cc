@@ -1,6 +1,6 @@
 # airflow related modules
 from airflow.decorators import dag, task
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # program related modules
 import logging
@@ -29,11 +29,43 @@ def _engine():
     )
 
 
+def _on_failure_callback(context):
+    """Log pipeline failures to pipeline_run_log table."""
+    try:
+        engine = _engine()
+        with engine.begin() as conn:
+            conn.execute(text("""
+                INSERT INTO nyc_taxi.pipeline_run_log
+                    (dag_id, task_id, execution_date, status, error_message)
+                VALUES (:dag_id, :task_id, :exec_date, 'FAILED', :error)
+            """), {
+                "dag_id": context["dag"].dag_id,
+                "task_id": context["task_instance"].task_id,
+                "exec_date": context["execution_date"],
+                "error": str(context.get("exception", "unknown error")),
+            })
+        logging.error(f"Task {context['task_instance'].task_id} failed. Logged to pipeline_run_log.")
+    except Exception as e:
+        logging.error(f"Failed to log failure to pipeline_run_log: {e}")
+
+
+default_args = {
+    "owner": "data-engineering",
+    "retries": 3,
+    "retry_delay": timedelta(minutes=5),
+    "retry_exponential_backoff": True,
+    "max_retry_delay": timedelta(minutes=30),
+    "on_failure_callback": _on_failure_callback,
+    "execution_timeout": timedelta(hours=2),
+}
+
+
 @dag(
     dag_id='yellow_monthly_dump',
     schedule=None,  # Manual trigger
     start_date=datetime(2024, 1, 1),
     catchup=False,
+    default_args=default_args,
     params={
         "file_month": "2025-01",   # e.g. "2024-06", "2025-01"
     },
