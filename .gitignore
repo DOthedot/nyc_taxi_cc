@@ -5,6 +5,34 @@ build/
 dist/
 wheels/
 *.egg-info
+*.ipynb_checkpoints
 
 # Virtual environments
 .venv
+
+# Secrets and environment
+.env
+.env.local
+
+# Configuration files with credentials
+bi_service/metabase.toml
+
+# Intermediate data artifacts
+data/green_taxi/output.csv/
+data/green_taxi/kafka_output_csv/
+spark-redpanda_service/output/
+
+# Airflow logs and state
+airflow_service/logs/
+
+# OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

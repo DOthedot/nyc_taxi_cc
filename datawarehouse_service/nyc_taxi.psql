@@ -1,38 +1,96 @@
 
--- silver table for green taxi 
-CREATE table IF NOT exists nyc_taxi.silver_green_taxi_data as 
-select  distinct "VendorID"  as vendor_id , 
-		COALESCE("Borough",'Unknown') as borough , 
-		COALESCE(service_zone,'Unknown')  as service_zone , 
-		date(lpep_pickup_datetime) as pickup_date, 
-		DATE_PART('month', lpep_pickup_datetime) as mnth  ,  
-		round(EXTRACT(EPOCH FROM AGE(lpep_dropoff_datetime, lpep_pickup_datetime)) / 60,2) as trip_time , 
-		COALESCE(passenger_count , 0) as passenger_count , 
-		trip_distance , total_amount as trip_amount, 
-		COALESCE(payment_type , 5 )  as payment_type
-from nyc_taxi.bronze_green_taxi_data as gt 
-left join nyc_taxi.bronze_taxi_zone_lookup as lkp 
-	on gt."PULocationID" =  lkp."LocationID" 
-where total_amount >= 0 and DATE_PART('month', lpep_pickup_datetime) = (select max(DATE_PART('month', lpep_pickup_datetime)) from nyc_taxi.bronze_green_taxi_data )
-; 
+-- ============================================================
+-- GREEN TAXI: Silver & Gold Layers
+-- ============================================================
 
--- drop table  nyc_taxi.silver_green_taxi_data ; 
+-- silver table for green taxi
+CREATE table IF NOT exists nyc_taxi.silver_green_taxi_data as
+select  distinct "VendorID"  as vendor_id ,
+		COALESCE("Borough",'Unknown') as borough ,
+		COALESCE(service_zone,'Unknown')  as service_zone ,
+		date(lpep_pickup_datetime) as pickup_date,
+		DATE_PART('month', lpep_pickup_datetime) as mnth  ,
+		round(EXTRACT(EPOCH FROM AGE(lpep_dropoff_datetime, lpep_pickup_datetime)) / 60,2) as trip_time ,
+		COALESCE(passenger_count , 0) as passenger_count ,
+		trip_distance , total_amount as trip_amount,
+		COALESCE(payment_type , 5 )  as payment_type
+from nyc_taxi.bronze_green_taxi_data as gt
+left join nyc_taxi.bronze_taxi_zone_lookup as lkp
+	on gt."PULocationID" =  lkp."LocationID"
+where total_amount >= 0 and DATE_TRUNC('month', lpep_pickup_datetime) = (select max(DATE_TRUNC('month', lpep_pickup_datetime)) from nyc_taxi.bronze_green_taxi_data )
+;
+
+-- drop table  nyc_taxi.silver_green_taxi_data ;
 
 -- gold table for green taxi, analytics ready
 create table IF NOT exists nyc_taxi.gold_green_taxi_data as (
-select case when vendor_id = 1 then 'Creative Mobile Technologies, LLC' 
-			 when vendor_id = 2 then 'Curb Mobility, LLC' 
+select case when vendor_id = 1 then 'Creative Mobile Technologies, LLC'
+			 when vendor_id = 2 then 'Curb Mobility, LLC'
 			 when vendor_id = 6 then 'Myle Technologies Inc' end as vendor_id,
 		borough , service_zone,pickup_date,
 		mnth,trip_time,passenger_count,trip_distance,trip_amount,
-		case when payment_type = '0' then 'Flex Fare trip'
-			when payment_type = '1' then 'Credit card'
-			when payment_type = '2' then 'Cash'
-			when payment_type = '3' then 'No charge'
-			when payment_type = '4' then 'Dispute'
-			when payment_type = '5' then 'Unknown'
-			when payment_type = '6' then 'Voided trip' end as payment_type
-from nyc_taxi.silver_green_taxi_data 	
-); 
+		case when payment_type = 0 then 'Flex Fare trip'
+			when payment_type = 1 then 'Credit card'
+			when payment_type = 2 then 'Cash'
+			when payment_type = 3 then 'No charge'
+			when payment_type = 4 then 'Dispute'
+			when payment_type = 5 then 'Unknown'
+			when payment_type = 6 then 'Voided trip' end as payment_type
+from nyc_taxi.silver_green_taxi_data
+);
 
--- drop table nyc_taxi.gold_green_taxi_data ; 
+-- drop table nyc_taxi.gold_green_taxi_data ;
+
+
+-- ============================================================
+-- YELLOW TAXI: Silver & Gold Layers
+-- ============================================================
+
+-- silver table for yellow taxi
+-- note: yellow taxi uses tpep_* datetime columns (vs lpep_* for green)
+CREATE TABLE IF NOT EXISTS nyc_taxi.silver_yellow_taxi_data AS
+SELECT DISTINCT
+    "VendorID"                                                                              AS vendor_id,
+    COALESCE("Borough", 'Unknown')                                                         AS borough,
+    COALESCE(service_zone, 'Unknown')                                                      AS service_zone,
+    DATE(tpep_pickup_datetime)                                                             AS pickup_date,
+    DATE_PART('month', tpep_pickup_datetime)                                               AS mnth,
+    ROUND(EXTRACT(EPOCH FROM AGE(tpep_dropoff_datetime, tpep_pickup_datetime)) / 60, 2)   AS trip_time,
+    COALESCE(passenger_count, 0)                                                           AS passenger_count,
+    trip_distance,
+    total_amount                                                                           AS trip_amount,
+    COALESCE(payment_type, 5)                                                              AS payment_type
+FROM nyc_taxi.bronze_yellow_taxi_data AS yt
+LEFT JOIN nyc_taxi.bronze_taxi_zone_lookup AS lkp
+    ON yt."PULocationID" = lkp."LocationID"
+WHERE total_amount >= 0
+  AND DATE_TRUNC('month', tpep_pickup_datetime) = (
+      SELECT MAX(DATE_TRUNC('month', tpep_pickup_datetime))
+      FROM nyc_taxi.bronze_yellow_taxi_data
+  );
+
+-- drop table nyc_taxi.silver_yellow_taxi_data;
+
+-- gold table for yellow taxi, analytics ready
+CREATE TABLE IF NOT EXISTS nyc_taxi.gold_yellow_taxi_data AS (
+    SELECT
+        CASE
+            WHEN vendor_id = 1 THEN 'Creative Mobile Technologies, LLC'
+            WHEN vendor_id = 2 THEN 'Curb Mobility, LLC'
+            WHEN vendor_id = 6 THEN 'Myle Technologies Inc'
+        END                                                                                 AS vendor_id,
+        borough, service_zone, pickup_date,
+        mnth, trip_time, passenger_count, trip_distance, trip_amount,
+        CASE
+            WHEN payment_type = 0 THEN 'Flex Fare trip'
+            WHEN payment_type = 1 THEN 'Credit card'
+            WHEN payment_type = 2 THEN 'Cash'
+            WHEN payment_type = 3 THEN 'No charge'
+            WHEN payment_type = 4 THEN 'Dispute'
+            WHEN payment_type = 5 THEN 'Unknown'
+            WHEN payment_type = 6 THEN 'Voided trip'
+        END                                                                                 AS payment_type
+    FROM nyc_taxi.silver_yellow_taxi_data
+);
+
+-- drop table nyc_taxi.gold_yellow_taxi_data;
